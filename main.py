@@ -1,4 +1,5 @@
 from tabulate import tabulate
+import csv
 
 
 items = [{'name': 'Charger', 'quantity': 35, 'unit': 'pcs.', 'unit_price': 24},
@@ -14,7 +15,7 @@ def add_item(name, quantity, unit, unit_price):
     for item in items:
         if item['name'] == new_item['name']:
             print('Item already in warehouse')
-            item['quantity'] = item['quantity'] + new_item['quantity']
+            item['quantity'] = int(item['quantity']) + new_item['quantity']
             break
     else:
         items.append(new_item)
@@ -24,8 +25,8 @@ def add_item(name, quantity, unit, unit_price):
 def sell_item(name, quantity):
     for item in items:
         if item['name'] == name:
-            if item['quantity'] >= int(quantity):
-                item['quantity'] = item['quantity'] - quantity
+            if int(item['quantity']) >= int(quantity):
+                item['quantity'] = int(item['quantity']) - quantity
                 sold_item = {'name': name, 'quantity': quantity, 'unit': item['unit'], 'unit_price': item['unit_price']}
                 sold_items.append(sold_item)
                 return 'Successfully sold {} {} of {}'.format(quantity, item['unit'], item['name'])
@@ -34,10 +35,11 @@ def sell_item(name, quantity):
                     .format(item['quantity'], item['unit'], item['name'])
 
 
+
 def get_costs():
     values = []
     for i in items:
-        value = i.get('quantity') * i.get('unit_price')
+        value = int(i.get('quantity')) * int(i.get('unit_price'))
         values.append(value)
     return sum(values)
 
@@ -45,7 +47,7 @@ def get_costs():
 def get_income():
     values = []
     for i in sold_items:
-        value = i.get('quantity') * i.get('unit_price')
+        value = int(i.get('quantity')) * int(i.get('unit_price'))
         values.append(value)
     return sum(values)
 
@@ -54,18 +56,38 @@ def show_revenue():
     return get_income() - get_costs()
 
 
+def export_items_to_csv():
+    with open('magazyn.csv', 'w', newline='') as csvfile:
+        fieldnames = ['name', 'quantity', 'unit', 'unit_price']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for i in items:
+            writer.writerow(i)
+
+
+def load_items_from_csv():
+    items.clear()
+    with open('magazyn.csv', newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            items.append(row)
+
+
 def menu():
     while True:
         print("1-Items available in warehouse")
         print("2-Add new item")
         print("3-Sell an item")
         print("4-Get revenue")
-        print("5-Exit")
+        print("5-Save files")
+        print("6-Import files")
+        print("7-Exit")
 
         action = input("What would you like to do?")
 
-        if action == "5":  # Exit
-            exit()
+        if action == "7":  # Exit
+            return False
 
         elif action == '1':  # Displaying items in warehouse
             print(tabulate(items, headers={'name': 'Name', 'quantity': 'Quantity:',
@@ -90,10 +112,23 @@ def menu():
             print("-" * 10)
             print('Revenue\t{} PLN'.format(show_revenue()))
 
+        elif action == '5':
+            print('Saving file to magazyn.csv')
+            export_items_to_csv()
+            print('File successfully saved.')
+
+        elif action == '6':
+            print('Loading file magazyn.csv')
+            load_items_from_csv()
+            print('File successfully loaded.')
+
         else:
             print('Please choose available option.')
 
 
 if __name__ == '__main__':
     print("Warehouse\n")
+    load_items_from_csv()
     menu()
+    print('Saving')
+    export_items_to_csv()
