@@ -26,23 +26,45 @@ def sell_item(name, quantity):
         if item['name'] == name:
             if item['quantity'] >= int(quantity):
                 item['quantity'] = item['quantity'] - quantity
+                sold_item = {'name': name, 'quantity': quantity, 'unit': item['unit'], 'unit_price': item['unit_price']}
+                sold_items.append(sold_item)
                 return 'Successfully sold {} {} of {}'.format(quantity, item['unit'], item['name'])
             else:
-                print('Sorry we have only {} {} of {} at this moment.'
-                      .format(item['quantity'], item['unit'], item['name']))
+                return 'Sorry we have {} {} of {} at this moment.'\
+                    .format(item['quantity'], item['unit'], item['name'])
+
+
+def get_costs():
+    values = []
+    for i in items:
+        value = i.get('quantity') * i.get('unit_price')
+        values.append(value)
+    return sum(values)
+
+
+def get_income():
+    values = []
+    for i in sold_items:
+        value = i.get('quantity') * i.get('unit_price')
+        values.append(value)
+    return sum(values)
+
+
+def show_revenue():
+    return get_income() - get_costs()
 
 
 def menu():
     while True:
-        print("\nWarehouse\n")
         print("1-Items available in warehouse")
         print("2-Add new item")
         print("3-Sell an item")
-        print("4-Exit")
+        print("4-Get revenue")
+        print("5-Exit")
 
         action = input("What would you like to do?")
 
-        if action == "4":  # Exit
+        if action == "5":  # Exit
             exit()
 
         elif action == '1':  # Displaying items in warehouse
@@ -53,7 +75,7 @@ def menu():
             new_name = (input('Item name:')).capitalize()
             new_quantity = int(input('Item quantity:'))
             new_unit = input('Item unit eg. l, kg, pcs:')
-            new_unit_price = int(input('Item price in PLN:'))
+            new_unit_price = float(input('Item price in PLN:'))
             add_item(new_name, new_quantity, new_unit, new_unit_price)
 
         elif action == '3':  # Selling item
@@ -61,10 +83,17 @@ def menu():
             sell_quantity = int(input('Item quantity:'))
             print(sell_item(sell_name, sell_quantity))
 
+        elif action == '4':
+            print('Revenue breakdown (PLN)')
+            print('Income:\t{}'.format(get_income()))
+            print('Costs:\t{}'.format(get_costs()))
+            print("-" * 10)
+            print('Revenue\t{} PLN'.format(show_revenue()))
+
         else:
             print('Please choose available option.')
 
 
 if __name__ == '__main__':
-    print(type(items))
+    print("Warehouse\n")
     menu()
